@@ -1,0 +1,15 @@
+#   Visible Count Nametags; When enabled, ring item entities will display a visible nametag(above) denoting item count.
+count_nametags bool true
+
+#   Whitelist Enabled; When enabled, ring whitelists will be enabled and required to be fulfilled to perform ring actions.
+whitelist_enabled bool true
+
+#   Rotating Ring Entities; When enabled, ring entities will rotate as opposed to remaining motionless.
+ring_entity_rotation bool true
+
+#   Immobilize Player With Ring; When enabled, player-ring summons will immobilize the player in similar manner to traditional formspec inventory immobility.
+immobilize_on_summon bool true
+
+#   Container Ring Inherit Settings; When enabled, summoned rings will obey settings of summoner (when applicable) rather than defaulting to default ring settings.
+container_inherit_settings bool true
+
