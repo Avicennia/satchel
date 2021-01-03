@@ -1,4 +1,8 @@
 local modn = minetest.get_current_modname()
+local do_immobilize = satchel.config.immobilize_on_summon
+local do_whitelist = satchel.config.whitelist_enabled
+local do_count_nametags = satchel.config.count_nametags
+local do_custom_settings = satchel.custom_settings
 
 -----------------------------------------------------------------
 -- UTIL functions
@@ -115,20 +119,18 @@ satchel.add_invring = function(ownerref, listname, listsize, radius, texture, tf
         }
     }
     function ring:build()
-        self:mobility_shift()
         local size,pos,ref = self.size,self.pos,self.owner
-        local int,settings = 360/size, satchel.settings[self.summoner or ref]
+        local int,settings = 360/size, do_custom_settings and satchel.settings[self.summoner or ref] or {}
         for n = 1, size, 1 do
             local thet = n*int
-            local pos2 = satchel.poltorec({settings.radius or self.radius,thet},pos)
-            local stack = self.inv:get_stack(self.list,n)
+            local pos2, stack = satchel.poltorec({settings.radius or self.radius,thet},pos),self.inv:get_stack(self.list,n) 
             pos2.y = pos2.y + (settings.height or 1)
             self.ents.ped[n] = {pos = pos2, stack = stack, obj = invring.add_pedent(ref,n,pos2)}
-            pos2.y = pos2.y+0.11 -- height offset for visibility of item-ent
+            pos2.y = pos2.y+0.13 -- height offset for visibility of item-ent
             self.ents.ite[n] = {pos = pos2, stack = stack, obj = invring.add_invent(ref,n,pos2)}
         end
         self.selected = {id = ref, ind = 0, act}
-        if(self.summoner)then
+        if(do_whitelist and self.summoner)then
             local tab = {}
             local meta = minetest.get_meta(pos)
             for k,v in pairs(meta:to_table().fields)do
@@ -139,12 +141,13 @@ satchel.add_invring = function(ownerref, listname, listsize, radius, texture, tf
             end
             self.whitelist = tab
         end
-        self:update()
+        return self:update(), do_immobilize and self:mobility_shift()
     end
 
     function ring:mobility_shift()
         local p = not self.summoner and self.owner or false
         p = p and minetest.get_player_by_name(p)
+        
         local pp = p and p:get_physics_override()
         return p and p:set_physics_override({speed = pp.speed > 0 and 0 or 1, gravity = 1, jump = pp.jump > 0 and 0 or 1, sneak = pp.sneak and false or true, sneak_glitch = pp.sneak_glitch, new_move = pp.new_move})
     end
@@ -158,9 +161,13 @@ satchel.add_invring = function(ownerref, listname, listsize, radius, texture, tf
             local props_ped = self.ents.ped[n].obj:get_properties()
             local props_ite = self.ents.ite[n].obj:get_properties()
             props_ped.infotext = minetest.registered_items[iname] and minetest.registered_items[iname].description.."\nCount: "..icount or "UNKNOWN_ITEM \nCount: " .. icount
-            props_ite.textures,props_ite.nametag = {iname ~= "" and iname or modn..":empty"},icount
+            props_ite.textures,props_ite.nametag = {iname ~= "" and iname or modn..":empty"},do_count_nametags and icount or nil
             self.ents.ped[n].obj:set_properties(props_ped)
             self.ents.ite[n].obj:set_properties(props_ite)
+            local p = self.ents.ped[n].pos
+            if(not minetest.get_node(p))then
+            return self:unbuild()
+            end
         end
     end
     return true
@@ -174,7 +181,7 @@ satchel.add_invring = function(ownerref, listname, listsize, radius, texture, tf
         if(compat.id)then
             compat.indices = t1.ind == t2.ind
             if(not compat.indices and t1.ind ~= 0 and t2 ~= 0)then -- two diff slots, same ring
-                local s1 = self:whitelist_has_owner() and (io.whitelist_check(t1.id, pname) or 0) or 2
+                local s1 = do_whitelist and self:whitelist_has_owner() and (io.whitelist_check(t1.id, pname) or 0) or 2
                 local v = s1 > 0 and satchel.ringreg[t1.id]:update() and io.stack_compat(satchel.ringreg[t1.id],t1.ind,t2.ind,frac)
                 satchel.ringreg[t1.id]:update()
                 self:clear_selected()
@@ -193,11 +200,11 @@ satchel.add_invring = function(ownerref, listname, listsize, radius, texture, tf
                 t1.ind = t2.ind
                 self:show_selected()
             elseif(t1.ind ~= 0 and t2.ind ~=0)then
-                local o1,o2 = io.whitelist_has_owner(t1.id), io.whitelist_has_owner(t2.id)
-                local s1,s2 = o1 and (io.whitelist_check(t1.id,pname) or 0) or 2, o2 and (io.whitelist_check(t2.id, pname) or 0) or 2
+                local o1,o2 = do_whitelist and io.whitelist_has_owner(t1.id),do_whitelist and io.whitelist_has_owner(t2.id)
+                local s1,s2 =do_whitelist and o1 and (io.whitelist_check(t1.id,pname) or 0) or 2, do_whitelist and o2 and (io.whitelist_check(t2.id, pname) or 0) or 2
                 --say(s1.." ||||| "..s2)
                 --say(satchel.ringreg[t1.id].whitelist)say(satchel.ringreg[t1.id].owner)
-                
+
                 if(s1 > 1 and s2 >= 1)then
                     satchel.ringreg[t1.id]:update()
                     satchel.ringreg[t2.id]:update()
@@ -216,7 +223,7 @@ satchel.add_invring = function(ownerref, listname, listsize, radius, texture, tf
         self:clear_selected()
         local s = self.selected
         local tf = s.id == self.owner
-        if(s.ind > 0)then
+        if(s and s.ind > 0)then
             local pos = tf and self.ents.ped[self.selected.ind].pos or satchel.ringreg[s.id].ents.ped[s.ind].pos
             pos = {x = pos.x, y = pos.y, z = pos.z}
             pos.y = pos.y + 0.4
@@ -251,7 +258,7 @@ satchel.add_invring = function(ownerref, listname, listsize, radius, texture, tf
     end
 
     function ring:unbuild()
-        self:mobility_shift()
+        local s = do_immobilize and self:mobility_shift(); s = nil
         for n = 1, #self.ents.ped do
             self.ents.ped[n].obj:remove()
             self.ents.ite[n].obj:remove()
@@ -259,6 +266,7 @@ satchel.add_invring = function(ownerref, listname, listsize, radius, texture, tf
         self.vv = self.ents.sel and self.ents.sel:remove()
         satchel.ringreg[self.owner] = nil
     end
+    
     satchel.ringreg[ownerref] = not satchel.ringreg[ownerref] and ring or satchel.ringreg[ownerref]:unbuild()
 end
 --

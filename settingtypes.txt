@@ -10,6 +10,11 @@ ring_entity_rotation bool true
 #   Immobilize Player With Ring; When enabled, player-ring summons will immobilize the player in similar manner to traditional formspec inventory immobility.
 immobilize_on_summon bool true
 
-#   Container Ring Inherit Settings; When enabled, summoned rings will obey settings of summoner (when applicable) rather than defaulting to default ring settings.
-container_inherit_settings bool true
+#   Custom Settings; When enabled, summoned rings will obey settings of summoner (when applicable) rather than defaulting to default ring settings.
+custom_settings bool true
 
+#   Superimpose_default_inventory; When enabled, default inventory formspec is disabled (as best as can currently be, which is more of a "mostly out of sight, out of mind" arrangement for now)
+superimpose_default_inventory bool false
+
+#   Require Craft; When enabled, items for trusting and wandmaking can be crafted, rather than needing to be spawned-in to exist 
+require_craft bool true

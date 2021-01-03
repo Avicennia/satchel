@@ -1,6 +1,9 @@
 local modn = minetest.get_current_modname()
-local name = modn..":testent"
 
+local do_rot = satchel.config.ring_entity_rotation
+local do_custom_settings = satchel.config.custom_settings
+
+local name = modn..":testent"
 local ent = {
     physical = false,
     collide_with_objects = false,
@@ -27,12 +30,12 @@ on_activate = function(self, stat)
     local stackref = data.ents.ped[ind].stack
     local wield = stackref:get_name() ~= "" and stackref:get_name() or modn..":empty"
     local pos = obj:get_pos()
-    local settings = satchel.settings[data.summoner or data.owner]
+    local settings = do_custom_settings and satchel.settings[data.summoner or data.owner]
     local light= minetest.get_node_light({x = pos.x, y = pos.y + 1, z = pos.z}) or 0
     light = light >= 10 and 0 or 14-light
     local props = obj:get_properties()
-    props.textures[1],props.nametag = wield, stackref:get_count()
-    props.automatic_rotate = wield ~= modn..":empty" and settings.speed or 0.41 or nil
+    props.textures[1] = wield
+    props.automatic_rotate = do_rot and (wield ~= modn..":empty" and settings.speed or 0.41) or 0
     props.glow = light
     obj:set_properties(props)
     obj:set_armor_groups({immortal=1})
@@ -68,6 +71,7 @@ on_activate = function(self, stat)
     end
     obj:set_armor_groups({immortal=1})
     local id = self.ring_id
+
     if(id)then
         local pos = obj:get_pos() -- position
         local data = satchel.ringreg[id]
@@ -79,15 +83,15 @@ on_activate = function(self, stat)
             local ind = self.ring_index
             local typeface = satchel.typefaces[satchel.settings[data.summoner or data.owner].typeface or 1]
             
-            for n = 1, 6 do
+            for n = 3, 6 do
                 local tex = ind > 0 and ind < 10 and data.texture.."^"..typeface..ind..".png" or data.texture
                 props.textures[n] = tex
             end 
-            props.automatic_rotate = satchel.settings[data.summoner or data.owner].speed or 0.41
+            props.automatic_rotate = do_rot and (satchel.settings[data.summoner or data.owner].speed or 0.41) or 0
             obj:set_properties(props)
             
         end
-    end
+    else obj:remove() end
 end,
 on_punch = function(self, puncher)
     local obj = self.object
@@ -104,7 +108,7 @@ on_rightclick = function(self,puncher)
     local id,ind = self.ring_id,self.ring_index
     local data = satchel.ringreg[id]
     local pname = puncher:is_player() and puncher:get_player_name()
-    local remote = pname and data.selected and satchel.ringreg[pname] 
+    local remote = (data) and pname and data.selected and satchel.ringreg[pname] 
     return remote and remote:select(remote.selected,{id = id, ind = ind},pname,2)
 end
 }
@@ -123,8 +127,8 @@ local ent = {
     pointable = false,
     visual = "wielditem",
     visual_size = {x = 0.1, y = 0.13},
-    textures = {modn..":hammer"},
-    automatic_rotate = 0.41,
+    textures = {modn..":select"},
+    automatic_rotate = do_rot and 0.41 or 0,
     backface_culling = true,
     glow = 9,
     nametag = "",

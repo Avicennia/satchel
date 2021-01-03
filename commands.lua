@@ -1,6 +1,8 @@
 local function reveal(p,x)
     return minetest.chat_send_player(p,x)
 end
+local do_whitelist = satchel.config.whitelist_enabled
+local do_custom_settings = satchel.config.custom_settings
 
 -- DebugCommands
 minetest.register_chatcommand("invring", {
@@ -36,7 +38,7 @@ minetest.register_chatcommand("invringlist", {
     end
 })
 
-
+if(do_custom_settings)then
 minetest.register_chatcommand("satchel_settinglist", {
     params = "Displays settings of all players to user <admin>", 
     description = "Remove privilege from player", 
@@ -58,12 +60,12 @@ minetest.register_chatcommand("invr", {
             return string.find(param, " ",n or 1)
         end
         local space1 = spcs(param)
-        local setting = string.sub( param, 1,space1-1) or nil
-        local value = string.sub(param, space1+1) or nil
-        local options = {radius = 1.6, height = 2, speed = 3, typeface = 4}
+        local setting = space1 and string.sub( param, 1,space1-1) or nil
+        local value = space1 and string.sub(param, space1+1) or nil
+        local options = {radius = 1.6, height = 2, speed = 2.4, typeface = 4, texture = 12}
         if(setting and options[setting])then
             local v = tonumber(value)
-            v = v and math.abs(v) <= options[setting] and v or options[setting]
+            v = v and v > 0 and v <= options[setting] and v or options[setting]
             local t = satchel.settings[name]
             t[setting] = v
             satchel.settings[name] = t
@@ -79,6 +81,8 @@ minetest.register_chatcommand("satchel_mysettinglist", {
         return satchel.settings[name] ~= nil and reveal(name, minetest.serialize(satchel.settings[name]))
     end
 })
+end
+if(do_whitelist)then
 minetest.register_chatcommand("satchel_whitelist", {
     params = "Adds a player to callers whitelist with a given value", 
     description = "Remove privilege from player", 
@@ -93,7 +97,7 @@ minetest.register_chatcommand("satchel_whitelist", {
         local ring = satchel.ringreg[name]
         if(ring and value and value < 3)then
             ring:whitelist_add(pname,value)
-            reveal(name, "Added "..pname.." to your satchel whitelist!")
+            reveal(name, "Added "..pname.." to your satchel whitelist at trust level "..value.."!")
         end 
     end
 })
@@ -129,3 +133,4 @@ minetest.register_chatcommand("satchel_mywhitelist", {
         satchel.show_whitelist(name)
     end
 })
+end
