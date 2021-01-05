@@ -183,7 +183,7 @@ satchel.add_invring = function(ownerref, listname, listsize, radius, texture, tf
         if(compat.id)then
             compat.indices = t1.ind == t2.ind
             if(not compat.indices and t1.ind ~= 0 and t2 ~= 0)then -- two diff slots, same ring
-                local s1 = do_whitelist and self:whitelist_has_owner() and (io.whitelist_check(t1.id, pname) or 0) or 2
+                local s1 = do_whitelist and io.whitelist_has_owner(t1.id) and (io.whitelist_check(t1.id, pname) or 0) or 2
                 local v = s1 > 0 and satchel.ringreg[t1.id]:update() and io.stack_compat(satchel.ringreg[t1.id],t1.ind,t2.ind,frac)
                 satchel.ringreg[t1.id]:update()
                 self:clear_selected()
