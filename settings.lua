@@ -1,6 +1,9 @@
+ -- luacheck: globals satchel minetest _
 
--- Mod Initialization Settings
+ -----------------------------------------------------------
+-- Mod Initialization Config
 -- Feel free to change these  as you like
+------------------------------------------------------------
 
 satchel.config = {
     count_nametags = false,
@@ -9,10 +12,9 @@ satchel.config = {
     immobilize_on_summon = true,
     custom_settings = true,
     superimpose_default_inventory = true,
+    disable_select_callbacks = true,
     require_craft = true
 }
-
---[[for k,v in pairs(defaults)do
-    minetest.settings:set_bool(k,v)
-    satchel.config[k] =minetest.settings:get_bool(k)
-end]] -- WIP, to implement through settingtypes.txt when post-5.1 setting glitch is resolved.
+-- Place itemnames in this table to have their on_rightclick methods cleared.
+satchel.dq = {}
+satchel.mtg_recipe_starter_item = {"default:dirt"}

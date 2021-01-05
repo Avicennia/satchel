@@ -1,6 +1,5 @@
+ -- luacheck: globals satchel minetest _
 satchel.feedback = {}
-
-
 satchel.feedback.show_trust = function(pos, tex)
 minetest.add_particlespawner({
     amount = 10,

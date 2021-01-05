@@ -18,3 +18,6 @@ superimpose_default_inventory bool false
 
 #   Require Craft; When enabled, items for trusting and wandmaking can be crafted, rather than needing to be spawned-in to exist 
 require_craft bool true
+
+#   Disable Select Callbacks; When enabled, will disable the on_rightclick calls of any nodes named in the satchel.dq table in settings.lua
+disable_select_callbacks bool true
