@@ -11,10 +11,6 @@ local ent = {
     pointable = false,
     visual = "wielditem",
     visual_size = {x = 0.08, y = 0.07},
-    makes_footstep_sound = false,
-    backface_culling = true,
-    nametag = "",
-    nametag_color = "",
     static_save = false,
     on_activate = function(self, stat)
         if(stat and stat ~= "")then
@@ -49,13 +45,9 @@ ent = {
     collide_with_objects = false,
     collisionbox = {-0.1, 0.1, -0.1, 0.1, 0.1, 0.1},
     selectionbox = {-0.1, -0.1, -0.1, 0.1, 0.1, 0.1},
-    pointable = true,
     visual = "cube",
     visual_size = {x = 0.18, y = 0.18},
     textures = {"satchel_panel.png","satchel_panel.png","satchel_panel.png","satchel_panel.png","satchel_panel.png","satchel_panel.png"},
-    is_visible = true,
-    automatic_rotate = 0,
-    backface_culling = true,
     static_save = false,
     on_activate = function(self, stat)
         local obj = self.object
@@ -113,10 +105,7 @@ ent = {
     visual_size = {x = 0.1, y = 0.13},
     textures = {modn..":select"},
     automatic_rotate = do_rot and 0.41 or 0,
-    backface_culling = true,
     glow = 9,
-    nametag = "",
-    nametag_color = "",
     static_save = false,
     on_activate = function(self, stat)
         if stat ~= "" and stat ~= nil then
